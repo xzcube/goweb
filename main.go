@@ -1,18 +1,46 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
+	"fmt"
+	"html/template"
+	"log"
+	"net/http"
 )
 
-func main() {
-	r := gin.Default() // 返回默认的路由引擎
-
-	r.GET("/hello", sayHello) // 指定用户使用GET请求 /hello 时，用sayHello函数
-	r.Run(":9090")
+type User struct {
+	Name   string
+	gender string
+	Age    int32
 }
 
-func sayHello(c *gin.Context) {
-	c.JSON(200, gin.H{
-		"message": "hello golang",
-	})
+func main() {
+	http.HandleFunc("/", sayHello)
+	err := http.ListenAndServe(":9090", nil)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+}
+
+func sayHello(w http.ResponseWriter, r *http.Request) {
+	// 解析模板
+	t, err := template.ParseFiles("./hello.tmpl")
+	if err != nil {
+		log.Fatalln(err)
+		return
+	}
+
+	// 渲染模板
+	u1 := User{
+		Name:   "小王子",
+		gender: "男",
+		Age:    18,
+	}
+
+	err = t.Execute(w, u1)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 }
